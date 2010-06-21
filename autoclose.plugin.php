@@ -13,7 +13,7 @@ class autoclose extends Plugin
 	public function action_plugin_deactivation( $file )
 	{
 		if ( realpath( $file ) == __FILE__ ) {
-			CronTab::delete_cron( 'autoclose_check_posts' );
+			CronTab::delete_cronjob( 'autoclose_check_posts' );
 		}
 	}
 
