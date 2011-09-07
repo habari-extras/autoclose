@@ -3,6 +3,9 @@
 class autoclose extends Plugin
 {
 
+	/*
+	 * Create a daily cronjob used to check and close posts after the configured time period. 
+	 */
 	public function action_plugin_activation( $file )
 	{
 		if ( realpath( $file ) == __FILE__ ) {
@@ -10,6 +13,9 @@ class autoclose extends Plugin
 		}
 	}
 
+	/*
+	 * Remove the cronjob on deactivation.
+	 */
 	public function action_plugin_deactivation( $file )
 	{
 		if ( realpath( $file ) == __FILE__ ) {
@@ -17,12 +23,13 @@ class autoclose extends Plugin
 		}
 	}
 
-	public function filter_plugin_config( $actions, $plugin_id )
+	/*
+	 * Add plugin menu options.
+	 */
+	public function filter_plugin_config()
 	{
-		if ( $plugin_id == $this->plugin_id() ) {
-			$actions[] = _t( 'Configure', 'autoclose' );
-			$actions[] = _t( 'Re-open autoclosed', 'autoclose' );
-		}
+		$actions['configure'] = _t( 'Configure', 'autoclose' );
+		$actions['reopen'] = _t( 'Re-open autoclosed', 'autoclose' );
 		return $actions;
 	}
 	
@@ -33,30 +40,36 @@ class autoclose extends Plugin
 		exit;
 	}
 
-	public function action_plugin_ui( $plugin_id, $action )
+	/*
+	 * The configuration form
+	 */
+	public function action_plugin_ui_configure()
 	{
-		if ( $plugin_id == $this->plugin_id() ) {
-			switch ( $action ) {
-				case _t( 'Configure', 'autoclose' ) :
-					$ui = new FormUI( 'autoclose' );
+		$ui = new FormUI( 'autoclose' );
 
-					$age_in_days = $ui->append( 'text', 'age_in_days', 'autoclose__age_in_days', _t('Post age (days) for autoclose', 'autoclose') );
-					$age_in_days->add_validator( 'validate_required' );
+		$age_in_days = $ui->append( 'text', 'age_in_days', 'autoclose__age_in_days', _t( 'Post age (days) for autoclose', 'autoclose' ) );
+		$age_in_days->add_validator( 'validate_required' );
 
-					$ui->append( 'submit', 'save', _t( 'Save', 'autoclose' ) );
-					$ui->set_option( 'success_message', _t( 'Configuration saved', 'autoclose' ) );
-					$ui->on_success( array( $this, 'updated_config' ) );
-					$ui->out();
-					break;
-				case _t( 'Re-Open', 'autoclose' ) :
-					$this->reopen_autoclosed();
-					Utils::redirect( URL::get( 'admin', 'page=plugins' ) );
-					break;
-			}
-		}
+		$ui->append( 'submit', 'save', _t( 'Save', 'autoclose' ) );
+		$ui->set_option( 'success_message', _t( 'Configuration saved', 'autoclose' ) );
+		$ui->on_success( array( $this, 'updated_config' ) );
+		$ui->out();
 	}
 	
-	public function updated_config( $ui ) {
+	/*
+	 * Re-open closed comments.  No need for a form as this only does one thing.
+	 */
+	public function action_plugin_ui_reopen()
+	{
+		$this->reopen_autoclosed();
+		Utils::redirect( URL::get( 'admin', 'page=plugins' ) );
+	}
+	
+	/*
+	 * Save the configuration but at the same time, check all the posts to see if any could be closed.
+	 */
+	public function updated_config( $ui ) 
+	{
 		// is this needed?
 		$ui->save();
 		// close comments on all old posts
@@ -65,7 +78,11 @@ class autoclose extends Plugin
 		return false;
 	}
 
-	public static function check_posts( $nolimit = false ) {
+	/*
+	 * The function that checks and closes all the posts that need closing.
+	 */
+	public static function check_posts( $nolimit = false ) 
+	{
 		$autoclosed = array();
 		$age_in_days = Options::get( 'autoclose__age_in_days' );
 		if ( is_null( $age_in_days ) ) return;
@@ -105,6 +122,9 @@ class autoclose extends Plugin
 		return true;
 	}
 	
+	/*
+	 * Function that re-opens any posts closed by this plugin.
+	 */
 	public function reopen_autoclosed() {
 		$reopened = array();
 		$posts = Posts::get( array(
@@ -123,14 +143,6 @@ class autoclose extends Plugin
 		Session::notice( sprintf( _t( 'Comments reopened on %d posts', 'autoclose' ), count( $reopened ) ) );
 		
 		return true;
-	}
-
-	/**
-	 * Add update beacon support
-	 **/
-	public function action_update_check()
-	{
-	 	Update::add( 'Autoclose', 'f63a1f56-0bc8-4b32-88cf-bc73fa51db7d', $this->info->version );
 	}
 }
 

@@ -2,9 +2,17 @@
 <pluggable type="plugin">
 	<name>Autoclose</name>
 	<author url="http://habariproject.org/">The Habari Community</author>
-	<version>0.3</version>
+	<version>0.4</version>
 	<url>http://habariproject.org/</url>
 	<description><![CDATA[Automatically close comments on posts older than a given number of days.]]></description>
 	<license url="http://www.apache.org/licenses/LICENSE-2.0.html">Apache License 2.0</license>
 	<copyright>2010</copyright>
+	<guid>f63a1f56-0bc8-4b32-88cf-bc73fa51db7d</guid>
+	<help>
+		<value><![CDATA[
+			<p>Configure Habari to close comments on all posts after a set number of days. 
+			For example, with this plugin you can configure Habari to close comments on all posts older than 20 days.</p>
+			<p>When you disable this plugin, all posts that had their comments closed automatically by this plugin, will have them re-enabled.</p>
+		]]></value>
+	</help>
 </pluggable>  
